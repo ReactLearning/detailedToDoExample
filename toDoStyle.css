@@ -1,0 +1,5 @@
+.mainDiv
+{ width: 900px}
+.leftDiv{float: left; width: 300px}
+.middleDiv{float: left; width: 300px;}
+.rightDiv{float: left; width: 300px;}
