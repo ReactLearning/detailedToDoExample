@@ -21,14 +21,8 @@ var config = {
             query: {
                presets: ['es2015', 'react']
             }
-         },
-         {
-        test: /\.css$/,
-        use: [
-          { loader: "style-loader" },
-          { loader: "css-loader" }
-        ]
-      }
+         },         
+         { test: /\.css$/, loader: 'style-loader!css-loader' }
       ]
    }
 }
