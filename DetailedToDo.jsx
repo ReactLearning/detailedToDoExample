@@ -1,6 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+// import Button from 'react-bootstrap/lib/Button';
+// import 'bootstrap/less/bootstrap.less';
+//import 'bootstrap/less/bootstrap.less';
 import './toDoStyle.css';
+// import './node_modules/bootstrap/dist/css/bootstrap.min.css';
 
 
 class DetailedToDo extends React.Component {
@@ -15,10 +19,9 @@ class DetailedToDo extends React.Component {
     }
 
     addNameToList(formData) {
-        var names = this.state.nameList;
-        names.push(formData);
-        this.setState({ nameList : names });
-        //this.state.nameList.filter((name) => { name.checked === "checked" });
+        var names = this.state.nameList;        
+        names.push(formData);        
+        this.setState({ nameList : names,selectedIndex:this.state.nameList.length-1 });
     }
     changeSelectedIndex (index) {
         this.setState({ selectedIndex: index });
@@ -26,11 +29,9 @@ class DetailedToDo extends React.Component {
         if(this.state.nameList[index].checked === 0)
         {
             this.state.nameList[index].checked=1;
-            //this.state.nameList[index].checked="checked";
         }
         else{
             this.state.nameList[index].checked=0;
-            //this.state.nameList[index].checked="";
         }
     }
 
@@ -38,7 +39,7 @@ class DetailedToDo extends React.Component {
         return (
             <div>
                 <div className="mainDiv">
-                    <div className="leftDiv">
+                    <div className="leftDiv">                        
                         <h1>Enter Details</h1>
                         <SimpleForm addNames={this.addNameToList} />
                     </div>                    
@@ -47,19 +48,31 @@ class DetailedToDo extends React.Component {
                         <SimpleList names={this.state.nameList} changeEventListner={this.changeSelectedIndex} />
                     </div>        
                     <div className="rightDiv">
-                        <h1>Details</h1>
+                    
+                    <h1>Details</h1>
                         <NameInfo details={this.state.nameList[this.state.selectedIndex]}/>
                     </div>        
                 </div>
                 <div>
-                    Total Selcted ToDos : {this.state.nameList.filter((name) => { name.checked == "checked" }
-                    )}
+                    Total Selcted ToDos : <CountCheckedNames names={this.state.nameList} />                                        
                 </div>                               
             </div>
         );
     }
 }
-
+class CountCheckedNames extends React.Component
+{
+    constructor(props) {
+        super(props);
+    }
+    render()
+    {
+        let filterNames = this.props.names.filter((name) => {return name.checked===1});        
+        return(
+            <div>{filterNames.length}</div>
+        );
+    }
+}
 class SimpleForm extends React.Component {
     constructor(props) {
         super(props);
@@ -72,22 +85,21 @@ class SimpleForm extends React.Component {
         this.updateState = this.updateState.bind(this);
     }
     localSubmit(e) {
-        
+        this.setState({checked:0});
         this.props.addNames(this.state);
     }
 
-    updateState(e) {        
+    updateState(e) {            
         this.setState({ [e.target.id]: e.target.value });        
     }
 
     render() {
         return (
             <div>
-                <input id="fname" placeholder="First Name"  value={this.state.firstName} onChange={this.updateState}
+                <input id="fname" placeholder="First Name"   onChange={this.updateState}
                 />
-                <input id="lname" placeholder="Last Name"  value={this.state.lastName} onChange={this.updateState}
-                />
-                <input type="hidden" id="checked" value="0"/>
+                <input id="lname" placeholder="Last Name"   onChange={this.updateState}
+                />                
                 <button onClick={this.localSubmit} className="btn">Add</button>
             </div>
         );
@@ -146,10 +158,15 @@ class NameInfo extends React.Component
 {
     render()
     {
-        return(       
+        let nameInfo;
+        if(this.props.details)
+        {
+            nameInfo = (<div><span>{this.props.details.fname ? this.props.details.fname: ""}</span>
+            <span>{this.props.details.lname? ', '+this.props.details.lname: ""}</span></div>);
+        }
+        return(                   
             <div> 
-                <span>{this.props.details && this.props.details.fname? this.props.details.fname: ""}</span>,
-                <span>{this.props.details && this.props.details.lname? this.props.details.lname: ""}</span>
+                {nameInfo}
             </div>
         );
     }
