@@ -11,65 +11,86 @@ class DetailedToDo extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            nameList: [],
-            selectedIndex: 0
+            todoList: [],
+            selectedIndex: 0,
+            showCompletedFlag: 0,
+            searchTodoText: null
         }
-        this.addNameToList = this.addNameToList.bind(this);
+        this.addTodoToList = this.addTodoToList.bind(this);
         this.changeSelectedIndex = this.changeSelectedIndex.bind(this);
+        this.showCompleted = this.showCompleted.bind(this);
+        this.clearFilter = this.clearFilter.bind(this);
+        this.searchTodo = this.searchTodo.bind(this);
     }
 
-    addNameToList(formData) {
-        var names = this.state.nameList;        
-        names.push(formData);        
-        this.setState({ nameList : names,selectedIndex:this.state.nameList.length-1 });
+    addTodoToList(formData) {
+        var todo = this.state.todoList;
+        todo.push(formData);
+        this.setState({ nameList: todo, selectedIndex: this.state.todoList.length - 1 });
+        document.getElementById("todoTitle").value = "";
+        document.getElementById("todoDesc").value = "";
     }
-    changeSelectedIndex (index) {
+    changeSelectedIndex(index) {
         this.setState({ selectedIndex: index });
-        
-        if(this.state.nameList[index].checked === 0)
-        {
-            this.state.nameList[index].checked=1;
+
+        if (this.state.todoList[index].checked === 0) {
+            this.state.todoList[index].checked = 1;
         }
-        else{
-            this.state.nameList[index].checked=0;
+        else {
+            this.state.todoList[index].checked = 0;
         }
+    }
+    showCompleted(e) {
+        this.setState({ showCompletedFlag: 1 });
+    }
+
+    searchTodo(e) {
+        this.setState({ searchTodoText: e.target.value });
+    }
+    clearFilter(e) {
+        document.getElementById("searchTodoText").value = "";
+        this.setState({ showCompletedFlag: 0, searchTodoText: null });
     }
 
     render() {
         return (
             <div>
                 <div className="mainDiv">
-                    <div className="leftDiv">                        
-                        <h1>Enter Details</h1>
-                        <SimpleForm addNames={this.addNameToList} />
-                    </div>                    
+                    <div className="leftDiv">
+                        <h1>Enter ToDo</h1>
+                        <SimpleForm addTodo={this.addTodoToList} />
+                    </div>
                     <div className="middleDiv">
-                        <h1>List Of Names </h1>
-                        <SimpleList names={this.state.nameList} changeEventListner={this.changeSelectedIndex} />
-                    </div>        
+                        <h1>List Of ToDos </h1>
+                        <SimpleList todos={this.state.todoList}
+                            showCompleted={this.state.showCompletedFlag}
+                            listSearchTodo={this.state.searchTodoText}
+                            changeEventListner={this.changeSelectedIndex} />
+                    </div>
                     <div className="rightDiv">
-                    
-                    <h1>Details</h1>
-                        <NameInfo details={this.state.nameList[this.state.selectedIndex]}/>
-                    </div>        
+
+                        <h1>Details</h1>
+                        <NameInfo details={this.state.todoList[this.state.selectedIndex]} />
+                    </div>
                 </div>
                 <div>
-                    Total Selcted ToDos : <CountCheckedNames names={this.state.nameList} />                                        
-                </div>                               
+                    Total Selcted ToDos : <CountCheckedNames todos={this.state.todoList} />
+                    <button onClick={this.showCompleted} >Completed</button><br />
+                    <input type="text" id="searchTodoText" onChange={this.searchTodo} placeholder="Search" /><br />
+                    <button onClick={this.clearFilter} >Clear Filter</button>
+                </div>
             </div>
         );
     }
 }
-class CountCheckedNames extends React.Component
-{
+class CountCheckedNames extends React.Component {
     constructor(props) {
         super(props);
     }
-    render()
-    {
-        let filterNames = this.props.names.filter((name) => {return name.checked===1});        
-        return(
-            <div>{filterNames.length}</div>
+    render() {
+        let filterTodos = this.props.todos.filter((todo) => { return todo.checked === 1 });
+        return (
+            <div>{filterTodos.length}</div>
         );
     }
 }
@@ -77,54 +98,71 @@ class SimpleForm extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            fname: '',
-            lname: '',
-            checked:0
+            todoTitle: '',
+            todoDesc: '',
+            checked: 0
         };
         this.localSubmit = this.localSubmit.bind(this);
         this.updateState = this.updateState.bind(this);
     }
     localSubmit(e) {
-        this.setState({checked:0});
-        this.props.addNames(this.state);
+        this.setState({ checked: 0 });
+        this.props.addTodo(this.state);
     }
 
-    updateState(e) {            
-        this.setState({ [e.target.id]: e.target.value });        
+    updateState(e) {
+        this.setState({ [e.target.id]: e.target.value });
     }
 
     render() {
         return (
             <div>
-                <input id="fname" placeholder="First Name"   onChange={this.updateState}
+                <input id="todoTitle" placeholder="ToDo Title" onChange={this.updateState}
                 />
-                <input id="lname" placeholder="Last Name"   onChange={this.updateState}
-                />                
+                <textarea rows="5" cols="30" id="todoDesc" placeholder="Description" onChange={this.updateState}
+                />                <br />
                 <button onClick={this.localSubmit} className="btn">Add</button>
             </div>
         );
     }
 }
 
-class SimpleList extends React.Component {    
+class SimpleList extends React.Component {
     constructor(props) {
         super(props);
-        this.localOnNameClick = this.localOnNameClick.bind(this);
+        this.localOnToDoClick = this.localOnToDoClick.bind(this);
     }
-    localOnNameClick(key)
-    {
+    localOnToDoClick(key) {
         this.props.changeEventListner(key);
     }
 
     render() {
         const ctx = this;
+        let showCompletedFlag = this.props.showCompleted;
+        let searchTodo = this.props.listSearchTodo;
+        let todoFilterList = [];
+        this.props.todos.map(function (todo, i) {
+            if (showCompletedFlag === 1 && todo.checked === 1) {
+                if (searchTodo ? todo.todoTitle.includes(searchTodo) : true)
+                { todoFilterList.push(todo); }
+            }
+            if (showCompletedFlag === 0) {
+                if (searchTodo ? todo.todoTitle.includes(searchTodo) : true) {
+                    todoFilterList.push(todo);
+                }
+            }
+        });
+
         return (
-            <div>                                
-                <div>                        
+            <div>
+                <div>
                     {
-                        this.props.names.map(function (name, i) {
-                            return <Name key={i} nIndex={i} nameVal={name} onListClick={(i) => ctx.localOnNameClick(i)}/>;
+
+                        todoFilterList.map(function (todo, i) {
+                            return <Name key={i} nIndex={i} todoVal={todo}
+                                onListClick={(i) => ctx.localOnToDoClick(i)} />;
                         })
+
                     }
                 </div>
             </div>
@@ -133,40 +171,46 @@ class SimpleList extends React.Component {
 }
 
 class Name extends React.Component {
-     constructor(props) {
+    constructor(props) {
         super(props);
         this.onListClick = this.onListClick.bind(this);
     }
-    onListClick(e)
-    {
+    onListClick(e) {
         this.props.onListClick(this.props.nIndex);
-    }   
-    render() {               
-        let checkedVar = this.props.nameVal.checked;        
+    }
+    render() {
+        let checkedVar = this.props.todoVal.checked;
         return (
-            <div>       
-                <span>{this.props.nIndex+1}</span>
-                <span><input type="checkbox" onChange={this.onListClick}  checked={checkedVar===0?"":"checked"}                         
-           name={this.props.nameVal.fname}/>
-                {this.props.nameVal.fname}</span>                
+            <div>
+                <span>{this.props.nIndex + 1}</span>
+                <span>
+                    <input type="checkbox" onChange={this.onListClick}
+                        checked={checkedVar === 0 ? "" : "checked"} />
+                    {this.props.todoVal.todoTitle}</span>
             </div>
         );
     }
 }
 
-class NameInfo extends React.Component
-{
-    render()
-    {
-        let nameInfo;
-        if(this.props.details)
-        {
-            nameInfo = (<div><span>{this.props.details.fname ? this.props.details.fname: ""}</span>
-            <span>{this.props.details.lname? ', '+this.props.details.lname: ""}</span></div>);
+class NameInfo extends React.Component {
+    render() {
+        let todoInfo;
+        if (this.props.details) {
+            todoInfo = (<div><span><i>{this.props.details.todoTitle ? this.props.details.todoTitle : ""}</i></span>
+                <br />
+                <textarea rows="5" cols="30" readOnly="readonly" value={this.props.details.todoDesc}>
+                </textarea></div>);
         }
-        return(                   
-            <div> 
-                {nameInfo}
+        // else
+        //     {
+        //         todoInfo = (<div><span><i>Todo Title</i></span>
+        //         <br />
+        //         <textarea rows="5" cols="30" readOnly="readonly" value="No data">
+        //         </textarea></div>);
+        //     }
+        return (
+            <div>
+                {todoInfo}
             </div>
         );
     }
