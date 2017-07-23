@@ -200,14 +200,7 @@ class NameInfo extends React.Component {
                 <br />
                 <textarea rows="5" cols="30" readOnly="readonly" value={this.props.details.todoDesc}>
                 </textarea></div>);
-        }
-        // else
-        //     {
-        //         todoInfo = (<div><span><i>Todo Title</i></span>
-        //         <br />
-        //         <textarea rows="5" cols="30" readOnly="readonly" value="No data">
-        //         </textarea></div>);
-        //     }
+        }     
         return (
             <div>
                 {todoInfo}
